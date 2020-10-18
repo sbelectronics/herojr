@@ -3,12 +3,14 @@
 #include "step.h"
 #include "limit.h"
 #include "steering.h"
+#include "slave.h"
 
 void setup()
 {
     LimitInit();
     StepInit();
     SteeringInit();
+    SlaveInit();
 }
 
 // Use the limit switch inputs to test the stepper motor

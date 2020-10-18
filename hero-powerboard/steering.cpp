@@ -8,6 +8,7 @@ uint16_t FullSweepSteps;
 uint16_t Position;
 uint16_t DesiredPosition;
 bool SteeringCalibrated;
+uint8_t DesiredPositionHi;
 unsigned long SteeringLastMillis;
 
 #define STEERING_STEP_DELAY 10
@@ -48,7 +49,20 @@ bool Calibrate()
 
 void SteerAbsolute(uint16_t newPosition)
 {
+    if (newPosition > FullSweepSteps) {
+        newPosition = FullSweepSteps;
+    }
     DesiredPosition = newPosition;
+}
+
+void SteerAbsoluteHi(uint8_t reg)
+{
+    DesiredPositionHi = reg;
+}
+
+void SteerAbsoluteLo(uint8_t reg)
+{
+    DesiredPosition = (DesiredPositionHi<<8) | reg;
 }
 
 void UpdateSteering() {
@@ -61,15 +75,23 @@ void UpdateSteering() {
     }
 
     if (Position > DesiredPosition) {
-        Step(false);
-        Position--;
-        SteeringLastMillis = millis();
+        if (LimitCCWDown()) {
+            // don't move, we're at a stop
+        } else {
+            Step(false);
+            Position--;
+            SteeringLastMillis = millis();
+        }
     }
 
     if (Position < DesiredPosition) {
-        Step(true);
-        Position++;
-        SteeringLastMillis = millis();
+        if (LimitCWDown()) {
+            // don't move, we're at a stop
+        } else {
+            Step(true);
+            Position++;
+            SteeringLastMillis = millis();
+        }
     }
 }
 
