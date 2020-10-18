@@ -1,0 +1,114 @@
+#!/usr/bin/python -u
+
+import argparse
+import sys
+
+from powerboard import PowerBoard, diags
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    defs = {"pigpio": False,
+            "diags": False,
+            "outputFile": None,
+            "outputAppend": False,
+            "daemon": False}
+
+    _help = 'Use pigpio (default: %s)' % defs['pigpio']
+    parser.add_argument(
+        '-P', '--pigpio', dest='pigpio', action='store_true',
+        default=defs['pigpio'],
+        help=_help)
+
+    _help = 'Enter diags mode after command (default: %s)' % defs['diags']
+    parser.add_argument(
+        '-D', '--diags', dest='diags', action='store_true',
+        default=defs['diags'],
+        help=_help)
+
+    _help = 'Send output to file (default: %s)' % defs['outputFile']
+    parser.add_argument(
+        '-O', '--outputfile', dest='outputFile', action='store', type=str,
+        default=defs['outputFile'],
+        help=_help)
+
+    _help = 'Append to log file(default: %s)' % defs['outputAppend']
+    parser.add_argument(
+        '-A', '--append', dest='outputAppend', action='store_true',
+        default=defs['outputAppend'],
+        help=_help)
+
+    _help = 'Daemonize (default: %s)' % defs['daemon']
+    parser.add_argument(
+        '-d', '--daemon', dest='daemon', action='store_true',
+        default=defs['daemon'],
+        help=_help)
+
+    parser.add_argument('cmd', help='command')
+    parser.add_argument('args', help='arguments', nargs='*')
+
+    args = parser.parse_args()
+
+    return args
+
+
+def  execute(args):
+    pi = None
+    if args.pigpio:
+        try:
+            import pigpio
+            pi = pigpio.pi()
+            if pi.connected:
+                pb = PowerBoard(pi=pi)
+            else:
+                print "Failed to connect to pigpio; defaulting to smbus"
+                pi = None
+        except ImportError:
+            print "Failed to import pigpio; defaulting to smbus"
+            pi = None
+
+    if not pi:
+        import smbus
+        bus = smbus.SMBus(1)
+        pb = PowerBoard(bus=bus)
+
+    if args.cmd == "diags":
+        args.diags = True
+    elif args.cmd == "show":
+        pb.dumpRegs()
+    elif args.cmd == "setpos":
+        if len(args.args)!=1:
+            raise Exception("Invalid number of arguments to setpos")
+        pb.setDesiredPosition(int(args.args[0]))
+        
+    else:
+        raise Exception("Unknown command %s" % args.cmd)
+
+    if args.diags:
+        diags(pb)
+
+
+def main():
+    args = parse_args()
+
+    if args.outputFile is not None:
+        if args.outputAppend:
+            outputFile = open(args.outputFile, "a", 0)
+        else:
+            outputFile = open(args.outputFile, "w", 0)
+    else:
+        outputFile = sys.stdout
+
+    if args.daemon:
+        raise Exception("Daemon not supported")
+        #context = daemon.DaemonContext(stdout=outputFile)
+        #with context:
+        #    execute(args)
+    else:
+        sys.stdout = outputFile
+        execute(args)
+
+
+if __name__ == "__main__":
+    main()
