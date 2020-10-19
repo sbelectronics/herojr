@@ -3,6 +3,7 @@
 #include "step.h"
 #include "limit.h"
 #include "steering.h"
+#include "drive.h"
 #include "slave.h"
 
 void setup()
@@ -27,4 +28,5 @@ void MotorTest()
 void loop()
 {
     UpdateSteering();
+    DriveUpdate();
 }
