@@ -1,6 +1,8 @@
+from smbpi.i2c_with_crc import I2CWithCrc, I2CError, ReceiveCRCError, ReceiveSizeError, ReceiveUninitializedError, CRCError, NoMoreRetriesError
 import time
 
 REG_RESET = 0
+REG_ECHO = 1
 REG_DESIREDPOSITION_HI = 10
 REG_DESIREDPOSITION_LO = 11
 REG_POSITION_HI = 12
@@ -10,58 +12,14 @@ REG_FULLSWEEPSTEPS_LO = 15
 REG_CENTERPOSITION_HI = 16
 REG_CENTERPOSITION_LO = 17
 REG_LIMITS = 50
+REG_SPEED = 60
+REG_DESIREDSPEED = 61
+REG_FORWARD = 62
+REG_DESIREDFORWARD = 63
 
-class PowerBoard:
+class PowerBoard(I2CWithCrc):
     def __init__(self, bus=None, addr=0x4, pi=None, sdaPin=2, sclPin=3):
-        self.bus = bus
-        self.addr = addr
-        self.pi = pi
-        self.sdaPin = sdaPin
-        self.sclPin = sclPin
-
-        if (self.pi):
-            try:
-                self.pi.bb_i2c_close(self.sdaPin)
-            except:
-                pass
-            # pigpiod
-            self.pi.bb_i2c_open(self.sdaPin, self.sclPin, 100000)
-
-    def readReg(self, reg):
-        if self.bus:
-            data = self.bus.read_byte_data(self.addr, reg)
-        else:
-            (count, i2cdata) = self.pi.bb_i2c_zip(self.sdaPin, 
-                (4, self.addr,      # set addr to self.addr
-                2, 7, 1, reg,       # start, write one byte (reg)
-                2, 6, 1,            # (re)start, read one byte
-                3,                  # stop
-                0))                 # end 
-            if count<0:
-                raise I2CError("i2c error")
-            if count!=2:
-                raise I2CError("i2c wrong byte count")
-
-            data = i2cdata[0]
-        return data
-
-    def writeReg(self, reg, v):
-        print "writeReg", reg, v
-        if self.bus:
-            self.bus.write_byte_data(self.addr, reg, v)
-        else:
-            (count, i2cdata) = self.pi.bb_i2c_zip(self.sdaPin, 
-                (4, self.addr,         # set addr to self.addr
-                2, 7, 2, reg, v,    # start, write two bytes (reg, v)
-                2, 6, 1,            # (re)start, read one byte
-                3,                  # stop
-                0))                 # end 
-            if count<0:
-                raise I2CError("i2c error")
-            if count!=2:
-                raise I2CError("i2c wrong byte count")
-
-            #readBack = i2cdata[0]
+        I2CWithCrc.__init__(self, bus, addr, pi, sdaPin, sclPin)
 
     def readDesiredPosition(self):
         return (self.readReg(REG_DESIREDPOSITION_HI) << 8) + self.readReg(REG_DESIREDPOSITION_LO)
@@ -82,13 +40,43 @@ class PowerBoard:
     def readLimits(self):
         return self.readReg(REG_LIMITS)
 
+    def readSpeed(self):
+        return self.readReg(REG_SPEED)
+
+    def readDesiredSpeed(self):
+        return self.readReg(REG_DESIREDSPEED)
+
+    def readForward(self):
+        return self.readReg(REG_FORWARD)
+
+    def readDesiredForward(self):
+        return self.readReg(REG_DESIREDFORWARD)
+
+    def setDesiredSpeed(self, speed):
+        self.writeReg(REG_DESIREDSPEED, speed)
+
+    def setDesiredForward(self, forward):
+        self.writeReg(REG_DESIREDFORWARD, forward)
+
+    def echo(self, v):
+        self.writeReg(REG_ECHO, v)
+        readBack = self.readReg(REG_ECHO)
+        if readBack != v:
+            print "ERROR! Echo failed", v, readBack
+
     def dumpRegs(self):
         desiredPosition = self.readDesiredPosition()
         position = self.readPosition()
         fullSweepPosition = self.readFullSweepSteps()
         centerPosition = self.readCenterPosition()
         lim = self.readLimits()
+        desiredSpeed = self.readDesiredSpeed()
+        speed = self.readSpeed()
+        desiredForward = self.readDesiredForward()
+        forward = self.readForward()
         print "dPos=%d, pos=%d, fPos=%d, cPos=%d, limits=%d" % (desiredPosition, position, fullSweepPosition, centerPosition, lim)
+        print "dSpeed=%d, speed=%d, dForward=%d, forward=%d" % (desiredSpeed, speed, desiredForward, forward)
+        print ""
 
 
 def diags(pb):
