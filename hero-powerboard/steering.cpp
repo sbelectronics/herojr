@@ -7,44 +7,82 @@ uint16_t CenterPosition;
 uint16_t FullSweepSteps;
 uint16_t Position;
 uint16_t DesiredPosition;
-bool SteeringCalibrated;
+uint8_t CalibrationState;
+uint16_t CalibrationSteps;
 uint8_t DesiredPositionHi;
+bool initialCalibrationDone;
 unsigned long SteeringLastMillis;
 
 #define STEERING_STEP_DELAY 10
 
-bool Calibrate()
+#define CALI_START          0
+#define CALI_COMPLETE    0x01
+#define CALI_CW          0x02
+#define CALI_CCW         0x03
+#define CALI_NOTSTARTED  0x80
+#define CALI_FAILURE_CW  0x81
+#define CALI_FAILURE_CCW 0x82
+
+void CalibrationUpdate()
 {
-    uint16_t steps;
-
-    // seek full clockwise
-    steps = 0;
-    while (!LimitCWDown()) {
-        Step(true);
-        steps++;
-        if (steps > 2000) {
-            return false;
-        }
-        delay(STEERING_STEP_DELAY);
+    if ((millis()>=SteeringLastMillis) && ((millis()-SteeringLastMillis)<STEERING_STEP_DELAY)) {
+        return;
     }
+    SteeringLastMillis = millis();
 
-    steps = 0;
-    while (!LimitCCWDown()) {
-        Step(false);
-        steps++;
-        if (steps > 2000) {
-            return false;
-        }
-        delay(STEERING_STEP_DELAY);
+    switch (CalibrationState) {
+        case CALI_START:
+            CalibrationSteps = 0;
+            CalibrationState = CALI_CW;
+            break;
+
+        case CALI_CW:
+            if (LimitCWDown()) {
+                CalibrationState = CALI_CCW;
+                CalibrationSteps = 0;
+            } else {
+                if (CalibrationSteps>1500) {
+                    CalibrationState = CALI_FAILURE_CW;
+                }
+                Step(true);
+                CalibrationSteps++;
+            }
+            break;
+
+        case CALI_CCW:
+            if (LimitCCWDown()) {
+                FullSweepSteps = CalibrationSteps;
+                CenterPosition = CalibrationSteps/2;
+                Position = 0;
+                if (!initialCalibrationDone) {
+                    DesiredPosition = CenterPosition;
+                    initialCalibrationDone = true;
+                }
+                CalibrationState = CALI_COMPLETE;
+            } else {
+                if (CalibrationSteps>1500) {
+                    CalibrationState = CALI_FAILURE_CCW;
+                }
+                Step(false);
+                CalibrationSteps++;
+            }
+            break;
+
+        case CALI_FAILURE_CW:
+        case CALI_FAILURE_CCW:
+            // do nothing
+            break;
     }
-    FullSweepSteps = steps;
-    CenterPosition = steps/2;
-    Position = 0;
-    DesiredPosition = 0;
-    SteeringLastMillis = 0;
-    SteeringCalibrated = true;
+}
 
-    return true;
+void StartCalibration()
+{
+    CalibrationState = CALI_START;
+}
+
+bool CalibrationComplete()
+{
+    return (CalibrationState == CALI_COMPLETE);
 }
 
 void SteerAbsolute(uint16_t newPosition)
@@ -65,12 +103,13 @@ void SteerAbsoluteLo(uint8_t reg)
     DesiredPosition = (DesiredPositionHi<<8) | reg;
 }
 
-void UpdateSteering() {
-    if ((millis()>=SteeringLastMillis) && ((millis()-SteeringLastMillis)<STEERING_STEP_DELAY)) {
+void SteeringUpdate() {
+    if (!CalibrationComplete()) {
+        CalibrationUpdate();
         return;
     }
 
-    if (!SteeringCalibrated) {
+    if ((millis()>=SteeringLastMillis) && ((millis()-SteeringLastMillis)<STEERING_STEP_DELAY)) {
         return;
     }
 
@@ -97,6 +136,13 @@ void UpdateSteering() {
 
 void SteeringInit()
 {
-    Calibrate();
+    initialCalibrationDone = false;
+    FullSweepSteps = 0;
+    CenterPosition = 0;
+    Position = 0;
+    DesiredPosition = 0;
+    CalibrationState = CALI_NOTSTARTED;
+
+    StartCalibration();
     SteerAbsolute(CenterPosition);
 }

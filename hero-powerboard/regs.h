@@ -13,10 +13,12 @@
 #define REG_FULLSWEEPSTEPS_LO 15
 #define REG_CENTERPOSITION_HI 16
 #define REG_CENTERPOSITION_LO 17
+#define REG_CALIBRATIONSTEPS_HI 18
+#define REG_CALIBRATIONSTEPS_LO 19
 
 // single-byte regs, steering
 #define REG_LIMITS 50
-// more single-byte regs follow
+#define REG_CALIBRATIONSTATE 51
 
 // single-byte regs, drive
 #define REG_SPEED 60

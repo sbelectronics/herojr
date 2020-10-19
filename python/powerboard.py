@@ -11,7 +11,10 @@ REG_FULLSWEEPSTEPS_HI = 14
 REG_FULLSWEEPSTEPS_LO = 15
 REG_CENTERPOSITION_HI = 16
 REG_CENTERPOSITION_LO = 17
+REG_CALIBRATIONSTEPS_HI = 18
+REG_CALIBRATIONSTEPS_LO = 19
 REG_LIMITS = 50
+REG_CALIBRATIONSTATE = 51
 REG_SPEED = 60
 REG_DESIREDSPEED = 61
 REG_FORWARD = 62
@@ -52,6 +55,12 @@ class PowerBoard(I2CWithCrc):
     def readDesiredForward(self):
         return self.readReg(REG_DESIREDFORWARD)
 
+    def readCalibrationState(self):
+        return self.readReg(REG_CALIBRATIONSTATE)
+
+    def readCalibrationSteps(self):
+        return (self.readReg(REG_CALIBRATIONSTEPS_HI) << 8) + self.readReg(REG_CALIBRATIONSTEPS_LO)
+
     def setDesiredSpeed(self, speed):
         self.writeReg(REG_DESIREDSPEED, speed)
 
@@ -74,7 +83,9 @@ class PowerBoard(I2CWithCrc):
         speed = self.readSpeed()
         desiredForward = self.readDesiredForward()
         forward = self.readForward()
-        print "dPos=%d, pos=%d, fPos=%d, cPos=%d, limits=%d" % (desiredPosition, position, fullSweepPosition, centerPosition, lim)
+        cali = self.readCalibrationState()
+        caliSteps = self.readCalibrationSteps()
+        print "dPos=%d, pos=%d, fPos=%d, cPos=%d, limits=%d, cali=%d, caliSteps=%d" % (desiredPosition, position, fullSweepPosition, centerPosition, lim, cali, caliSteps)
         print "dSpeed=%d, speed=%d, dForward=%d, forward=%d" % (desiredSpeed, speed, desiredForward, forward)
         print ""
 

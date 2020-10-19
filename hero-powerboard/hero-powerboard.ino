@@ -27,6 +27,6 @@ void MotorTest()
 
 void loop()
 {
-    UpdateSteering();
+    SteeringUpdate();
     DriveUpdate();
 }

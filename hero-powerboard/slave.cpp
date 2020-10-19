@@ -124,7 +124,13 @@ void SlaveRequest() {
             break;
         case REG_CENTERPOSITION_LO:
             data = CenterPosition&0xFF;
-            break;            
+            break;
+        case REG_CALIBRATIONSTEPS_HI:
+            data = CalibrationSteps>>8;
+            break;
+        case REG_CALIBRATIONSTEPS_LO:
+            data = CalibrationSteps&0xFF;
+            break;             
         case REG_LIMITS:
             data = (LimitCWDown() ? 1 : 0) | (LimitCCWDown() ? 2 : 0);
             break;
@@ -142,6 +148,9 @@ void SlaveRequest() {
             break;
         case REG_ECHO:
             data = EchoReg;
+            break;
+        case REG_CALIBRATIONSTATE:
+            data = CalibrationState;
             break;
     }
 
