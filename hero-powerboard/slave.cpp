@@ -7,6 +7,8 @@
 #include "slave.h"
 #include "regs.h"
 #include "drive.h"
+#include "limit.h"
+#include "encoder.h"
 
 #define ERROR_CRC 0xFF
 #define ERROR_SIZE 0xFE
@@ -130,7 +132,13 @@ void SlaveRequest() {
             break;
         case REG_CALIBRATIONSTEPS_LO:
             data = CalibrationSteps&0xFF;
-            break;             
+            break;
+        case REG_WHEELENCODER_HI:
+            data = WheelEncoderCount>>8;
+            break;
+        case REG_WHEELENCODER_LO:
+            data = WheelEncoderCount&0xFF;
+            break;                               
         case REG_LIMITS:
             data = (LimitCWDown() ? 1 : 0) | (LimitCCWDown() ? 2 : 0);
             break;

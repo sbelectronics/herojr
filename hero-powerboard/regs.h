@@ -16,6 +16,10 @@
 #define REG_CALIBRATIONSTEPS_HI 18
 #define REG_CALIBRATIONSTEPS_LO 19
 
+// two-byte regs, encoders
+#define REG_WHEELENCODER_HI 30
+#define REG_WHEELENCODER_LO 31
+
 // single-byte regs, steering
 #define REG_LIMITS 50
 #define REG_CALIBRATIONSTATE 51

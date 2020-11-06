@@ -13,6 +13,8 @@ REG_CENTERPOSITION_HI = 16
 REG_CENTERPOSITION_LO = 17
 REG_CALIBRATIONSTEPS_HI = 18
 REG_CALIBRATIONSTEPS_LO = 19
+REG_WHEELENCODER_HI = 30
+REG_WHEELENCODER_LO = 31
 REG_LIMITS = 50
 REG_CALIBRATIONSTATE = 51
 REG_SPEED = 60
@@ -61,6 +63,9 @@ class PowerBoard(I2CWithCrc):
     def readCalibrationSteps(self):
         return (self.readReg(REG_CALIBRATIONSTEPS_HI) << 8) + self.readReg(REG_CALIBRATIONSTEPS_LO)
 
+    def readWheelEncoderCount(self):
+        return (self.readReg(REG_WHEELENCODER_HI) << 8) + self.readReg(REG_WHEELENCODER_LO)
+
     def setDesiredSpeed(self, speed):
         self.writeReg(REG_DESIREDSPEED, speed)
 
@@ -85,8 +90,9 @@ class PowerBoard(I2CWithCrc):
         forward = self.readForward()
         cali = self.readCalibrationState()
         caliSteps = self.readCalibrationSteps()
+        wheelEncoderCount = self.readWheelEncoderCount()
         print "dPos=%d, pos=%d, fPos=%d, cPos=%d, limits=%d, cali=%d, caliSteps=%d" % (desiredPosition, position, fullSweepPosition, centerPosition, lim, cali, caliSteps)
-        print "dSpeed=%d, speed=%d, dForward=%d, forward=%d" % (desiredSpeed, speed, desiredForward, forward)
+        print "dSpeed=%d, speed=%d, dForward=%d, forward=%d, wEncoder=%d" % (desiredSpeed, speed, desiredForward, forward, wheelEncoderCount)
         print ""
 
 

@@ -5,12 +5,14 @@
 #include "steering.h"
 #include "drive.h"
 #include "slave.h"
+#include "encoder.h"
 
 void setup()
 {
     LimitInit();
     StepInit();
     SteeringInit();
+    EncoderInit();
     SlaveInit();
 }
 
@@ -29,4 +31,5 @@ void loop()
 {
     SteeringUpdate();
     DriveUpdate();
+    EncoderUpdate();
 }
