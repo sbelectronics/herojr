@@ -107,13 +107,13 @@ def  execute(args):
     elif args.cmd == "remote":
         args.remote = True
     elif args.cmd == "forward":
-        pb.SetForward(true);
+        pb.setDesiredForward(1)
         if len(args.args)>0:
-            pb.SetSpeed(int(args.args[0]))
+            pb.setDesiredSpeed(int(args.args[0]))
     elif args.cmd == "reverse":
-        pb.SetForward(false);
+        pb.setDesiredForward(0)
         if len(args.args)>0:
-            pb.SetSpeed(int(args.args[0]))
+            pb.setDesiredSpeed(int(args.args[0]))
     elif args.cmd == "reliability-test":
         reliabilityTest(pb)
     else:

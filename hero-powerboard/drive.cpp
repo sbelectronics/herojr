@@ -2,12 +2,13 @@
 #include "step.h"
 
 // It would have made a whole lot of sense to put these all on the same port!!! 
-#define CIN1 (1<<PD2)
-#define CIN2 (1<<PD3)
-#define DRIVE_PWM_PIN PD5
-#define DRIVE_PWM (1<<DRIVE_PWM_PIN)
+#define CIN1 (1<<PC6)
+#define CIN2 (1<<PC7)
+// note uses arduino pin numbers 12 = analog out on PD4
+#define DRIVE_PWM_PIN 12
+#define DRIVE_PWM (1<<PD4)
 
-#define DMASK (CIN1 | CIN2)
+#define CMASK (CIN1 | CIN2)
 
 #define REVERSE_DELAY 250
 
@@ -20,9 +21,9 @@ bool DesiredForward;
 void _SetDriveDirection(uint8_t forward)
 {
     if (forward) {
-        PORTD = (PORTD & (~DMASK)) | CIN2;
+        PORTC = (PORTC & (~CMASK)) | CIN2;
     } else {
-        PORTD = (PORTD & (~DMASK)) | CIN1;
+        PORTC = (PORTC & (~CMASK)) | CIN1;
     }
     Forward = forward;
 }
@@ -52,7 +53,7 @@ void DriveInit() {
     Speed = 0;
     Forward = true;
 
-    DDRD |= DMASK;
+    DDRC |= CMASK;
 
     DDRD |= DRIVE_PWM;
     analogWrite(DRIVE_PWM_PIN, 0);

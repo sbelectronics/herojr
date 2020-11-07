@@ -1,40 +1,35 @@
 #include <Arduino.h>
 #include "step.h"
 
-// It would have made a whole lot of sense to put these all on the same port!!! 
-#define AIN1 (1<<PC3)
-#define AIN2 (1<<PB0)
-#define BIN1 (1<<PB6)
-#define BIN2 (1<<PB7)
-#define STEER_PWM (1<<PB1)
+#define AIN1 (1<<PC2)
+#define AIN2 (1<<PC3)
+#define BIN1 (1<<PC4)
+#define BIN2 (1<<PC5)
+#define STEER1_PWM (1<<PB3)
+#define STEER2_PWM (1<<PB4)
 
-#define CMASK AIN1
-#define BMASK (AIN2 | BIN1 | BIN2)
+#define STEP_MASK (AIN1 | AIN2 | BIN1 | BIN2)
 
 // This is what it would look like if the driver's inputs were active high
 uint8_t InvStepTable[4] = {AIN1, BIN1, AIN2, BIN2};
 
 // The drivers inputs are active low
-uint8_t StepTableB[4] = {AIN2|BIN1|BIN2, AIN2|BIN2, BIN1|BIN2, AIN2|BIN1};
-uint8_t StepTableC[4] = {0, AIN1, AIN1, AIN1};
+uint8_t StepTable[4] = {AIN2|BIN1|BIN2, AIN1|AIN2|BIN2, AIN1|BIN1|BIN2, AIN1|AIN2|BIN1};
 uint8_t StepIndex = 0;
 
 void StepInit() {
-    DDRB |= BMASK;
-    DDRC |= CMASK;
+    DDRC |= STEP_MASK;
 
     // 100%
-    DDRB |= STEER_PWM;
-    PORTB |= STEER_PWM;
+    DDRB |= (STEER1_PWM | STEER2_PWM);
+    PORTB |= (STEER1_PWM | STEER2_PWM);
 }
 
 void SetStepOutput(uint8_t index) {
     // dead time between steps
-    PORTB |= BMASK;
-    PORTC |= CMASK;
+    PORTC |= STEP_MASK;
     // set the step
-    PORTB = (PORTB & (~BMASK)) | StepTableB[index];
-    PORTC = (PORTC & (~CMASK)) | StepTableC[index];
+    PORTC = (PORTC & (~STEP_MASK)) | StepTable[index];
 }
 
 void Step(bool clockwise) {
