@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "step.h"
+#include "globals.h"
 
 // It would have made a whole lot of sense to put these all on the same port!!! 
 #define CIN1 (1<<PC6)
@@ -10,9 +11,9 @@
 
 #define CMASK (CIN1 | CIN2)
 
-#define REVERSE_DELAY 250
+#define REVERSE_DELAY 250000
 
-unsigned long LastStoppedMillis;
+unsigned long tLastStopped;
 uint8_t Speed;
 uint8_t DesiredSpeed;
 bool Forward;
@@ -34,7 +35,7 @@ void _SetDriveSpeed(uint8_t speed)
     Speed = speed;
 
     if (speed == 0) {
-        LastStoppedMillis = millis();
+        tLastStopped = tLoopTop;
     }
 }
 
@@ -49,7 +50,7 @@ void SetDesiredSpeed(uint8_t speed)
 }
 
 void DriveInit() {
-    LastStoppedMillis = 0;
+    tLastStopped = 0;
     Speed = 0;
     Forward = true;
 
@@ -69,7 +70,7 @@ void ForwardReverseUpdate()
     }
 
     // some deadtime when changing direction
-    if ((millis()>=LastStoppedMillis) && ((millis()-LastStoppedMillis)<REVERSE_DELAY)) {
+    if ((tLoopTop>=tLastStopped) && ((tLoopTop-tLastStopped)<REVERSE_DELAY)) {
         return;
     }
 

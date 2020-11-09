@@ -2,6 +2,7 @@
 #include "step.h"
 #include "limit.h"
 #include "steering.h"
+#include "globals.h"
 
 uint16_t CenterPosition;
 uint16_t FullSweepSteps;
@@ -11,9 +12,9 @@ uint8_t CalibrationState;
 uint16_t CalibrationSteps;
 uint8_t DesiredPositionHi;
 bool initialCalibrationDone;
-unsigned long SteeringLastMillis;
+unsigned long tSteeringUpdate;
 
-#define STEERING_STEP_DELAY 10
+#define STEERING_STEP_DELAY 10000
 
 #define CALI_START          0
 #define CALI_COMPLETE    0x01
@@ -25,10 +26,10 @@ unsigned long SteeringLastMillis;
 
 void CalibrationUpdate()
 {
-    if ((millis()>=SteeringLastMillis) && ((millis()-SteeringLastMillis)<STEERING_STEP_DELAY)) {
+    if ((tLoopTop>=tSteeringUpdate) && ((tLoopTop-tSteeringUpdate)<STEERING_STEP_DELAY)) {
         return;
     }
-    SteeringLastMillis = millis();
+    tSteeringUpdate = tLoopTop;
 
     switch (CalibrationState) {
         case CALI_START:
@@ -109,7 +110,7 @@ void SteeringUpdate() {
         return;
     }
 
-    if ((millis()>=SteeringLastMillis) && ((millis()-SteeringLastMillis)<STEERING_STEP_DELAY)) {
+    if ((tLoopTop>=tSteeringUpdate) && ((tLoopTop-tSteeringUpdate)<STEERING_STEP_DELAY)) {
         return;
     }
 
@@ -119,7 +120,7 @@ void SteeringUpdate() {
         } else {
             Step(false);
             Position--;
-            SteeringLastMillis = millis();
+            tSteeringUpdate = tLoopTop;
         }
     }
 
@@ -129,7 +130,7 @@ void SteeringUpdate() {
         } else {
             Step(true);
             Position++;
-            SteeringLastMillis = millis();
+            tSteeringUpdate = tLoopTop;
         }
     }
 }

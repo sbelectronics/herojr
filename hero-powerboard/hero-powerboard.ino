@@ -7,6 +7,9 @@
 #include "drive.h"
 #include "slave.h"
 #include "encoder.h"
+#include "globals.h"
+
+unsigned long tLoopTop;
 
 void setup()
 {
@@ -29,32 +32,21 @@ void MotorTest()
     delay(250);
 }
 
-/*
-#define HEAD_STEP_DELAY 1000
-unsigned long HeadLastMicros;
+#define HEAD_STEP_DELAY 2000
+unsigned long tHeadMoved;
 void HeadUpdate()
 {
-    if ((micros()>=HeadLastMicros) && ((micros()-HeadLastMicros)<HEAD_STEP_DELAY)) {
+    if ((tLoopTop>=tHeadMoved) && ((tLoopTop-tHeadMoved)<HEAD_STEP_DELAY)) {
         return;
     }
-    HeadLastMicros = micros();
-    HeadStep(true);
-}
-*/
-
-#define HEAD_STEP_DELAY 1
-unsigned long HeadLastMillis;
-void HeadUpdate()
-{
-    if ((millis()>=HeadLastMillis) && ((millis()-HeadLastMillis)<HEAD_STEP_DELAY)) {
-        return;
-    }
-    HeadLastMillis = millis();
+    tHeadMoved = tLoopTop;
     HeadStep(true);
 }
 
 void loop()
 {
+    tLoopTop = micros();
+
     SteeringUpdate();
     HeadUpdate();
     DriveUpdate();
