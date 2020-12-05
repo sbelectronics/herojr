@@ -4,6 +4,7 @@
 #include "headstep.h"
 #include "limit.h"
 #include "steering.h"
+#include "headsteering.h"
 #include "drive.h"
 #include "slave.h"
 #include "encoder.h"
@@ -17,6 +18,7 @@ void setup()
     StepInit();
     SteeringInit();
     HeadStepInit();
+    HeadSteeringInit();
     EncoderInit();
     SlaveInit();
 }
@@ -32,6 +34,7 @@ void MotorTest()
     delay(250);
 }
 
+/*
 #define HEAD_STEP_DELAY 2000
 unsigned long tHeadMoved;
 void HeadUpdate()
@@ -41,14 +44,14 @@ void HeadUpdate()
     }
     tHeadMoved = tLoopTop;
     HeadStep(true);
-}
+}*/
 
 void loop()
 {
     tLoopTop = micros();
 
     SteeringUpdate();
-    HeadUpdate();
+    HeadSteeringUpdate();
     DriveUpdate();
     EncoderUpdate();
 }

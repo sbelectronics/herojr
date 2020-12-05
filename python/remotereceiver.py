@@ -12,6 +12,25 @@ SPEED_THRESH = 20
 # dead zone plus and minus from center (fullscale is 0-1000)
 CENTER_THRESH = 40
 
+# constants from pi-remote
+KEY_1 =         1
+KEY_2 =         2
+KEY_3 =         4
+KEY_4 =         8
+KEY_5 =      0x10
+KEY_6 =      0x20
+KEY_7 =      0x40
+KEY_8 =      0x80
+KEY_9 =     0x100
+KEY_0 =     0x200
+KEY_HASH =  0x400
+KEY_STAR =  0x800
+KEY_S =    0x1000
+KEY_P =    0x2000
+KEY_R =    0x4000
+BUT0  =         1
+BUT1  =         2
+
 
 class RemoteReceiver(threading.Thread):
     def __init__(self, powerBoard=None):

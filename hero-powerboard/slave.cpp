@@ -4,6 +4,7 @@
 #include "step.h"
 #include "limit.h"
 #include "steering.h"
+#include "headsteering.h"
 #include "slave.h"
 #include "regs.h"
 #include "drive.h"
@@ -68,6 +69,13 @@ void SlaveReceive(int howMany) {
             case REG_DESIREDPOSITION_LO:
                 SteerAbsoluteLo(data);
                 break;
+            case REG_HEADDESIREDPOSITION_HI:
+                // NOTE: Will not be read-back until the low byte is also written
+                HeadSteerAbsoluteHi(data);
+                break;
+            case REG_HEADDESIREDPOSITION_LO:
+                HeadSteerAbsoluteLo(data);
+                break;
             case REG_DESIREDSPEED:
                 DesiredSpeed = data;
                 break;
@@ -77,6 +85,9 @@ void SlaveReceive(int howMany) {
             case REG_ECHO:
                 EchoReg = data;
                 break;
+            case REG_HEADAUTOROTATE:
+                HeadAutoRotate = data;
+                break;                
         }
         RegPosition++;
     }
@@ -133,6 +144,38 @@ void SlaveRequest() {
         case REG_CALIBRATIONSTEPS_LO:
             data = CalibrationSteps&0xFF;
             break;
+
+        case REG_HEADDESIREDPOSITION_HI:
+            data = HeadDesiredPosition>>8;
+            break;
+        case REG_HEADDESIREDPOSITION_LO:
+            data = HeadDesiredPosition&0xFF;
+            break;
+        case REG_HEADPOSITION_HI:
+            data = HeadPosition>>8;
+            break;
+        case REG_HEADPOSITION_LO:
+            data = HeadPosition&0xFF;
+            break;
+        case REG_HEADFULLSWEEPSTEPS_HI:
+            data = HeadFullSweepSteps>>8;
+            break;
+        case REG_HEADFULLSWEEPSTEPS_LO:
+            data = HeadFullSweepSteps&0xFF;
+            break;
+        case REG_HEADCENTERPOSITION_HI:
+            data = HeadCenterPosition>>8;
+            break;
+        case REG_HEADCENTERPOSITION_LO:
+            data = HeadCenterPosition&0xFF;
+            break;
+        case REG_HEADCALIBRATIONSTEPS_HI:
+            data = HeadCalibrationSteps>>8;
+            break;
+        case REG_HEADCALIBRATIONSTEPS_LO:
+            data = HeadCalibrationSteps&0xFF;
+            break;
+
         case REG_WHEELENCODER_HI:
             data = WheelEncoderCount>>8;
             break;
@@ -140,7 +183,7 @@ void SlaveRequest() {
             data = WheelEncoderCount&0xFF;
             break;                               
         case REG_LIMITS:
-            data = (LimitCWDown() ? 1 : 0) | (LimitCCWDown() ? 2 : 0);
+            data = (LimitCWDown() ? 1 : 0) | (LimitCCWDown() ? 2 : 0) | (HeadHallDown() ? 4 : 0);
             break;
         case REG_SPEED:
             data = Speed;
@@ -159,6 +202,9 @@ void SlaveRequest() {
             break;
         case REG_CALIBRATIONSTATE:
             data = CalibrationState;
+            break;
+        case REG_HEADCALIBRATIONSTATE:
+            data = HeadCalibrationState;
             break;
     }
 

@@ -104,6 +104,10 @@ def  execute(args):
         if len(args.args)!=1:
             raise Exception("Invalid number of arguments to setpos")
         pb.setDesiredPosition(int(args.args[0]))
+    elif args.cmd == "setheadpos":
+        if len(args.args)!=1:
+            raise Exception("Invalid number of arguments to setheadpos")
+        pb.setHeadDesiredPosition(int(args.args[0]))
     elif args.cmd == "remote":
         args.remote = True
     elif args.cmd == "forward":
