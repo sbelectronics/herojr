@@ -108,6 +108,10 @@ def  execute(args):
         if len(args.args)!=1:
             raise Exception("Invalid number of arguments to setheadpos")
         pb.setHeadDesiredPosition(int(args.args[0]))
+    elif args.cmd == "setheadauto":
+        if len(args.args)!=1:
+            raise Exception("Invalid number of arguments to setheadauto")
+        pb.setHeadAutoRotate(int(args.args[0]))
     elif args.cmd == "remote":
         args.remote = True
     elif args.cmd == "forward":

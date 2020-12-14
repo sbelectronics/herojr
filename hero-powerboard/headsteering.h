@@ -11,6 +11,7 @@ extern uint16_t HeadPosition;
 extern uint16_t HeadDesiredPosition;
 extern uint8_t HeadCalibrationState;
 extern uint16_t HeadCalibrationSteps;
+extern uint8_t HeadAutoRotate;
 
 void HeadSteeringInit();
 void HeadSteerAbsolute();

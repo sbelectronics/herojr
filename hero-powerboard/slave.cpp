@@ -206,6 +206,9 @@ void SlaveRequest() {
         case REG_HEADCALIBRATIONSTATE:
             data = HeadCalibrationState;
             break;
+        case REG_HEADAUTOROTATE:
+            data = HeadAutoRotate;
+            break;
     }
 
     Wire.write(data);

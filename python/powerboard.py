@@ -30,6 +30,7 @@ REG_WHEELENCODER_LO = 41
 REG_LIMITS = 50
 REG_CALIBRATIONSTATE = 51
 REG_HEADCALIBRATIONSTATE = 52
+REG_HEADAUTOROTATE = 53
 REG_SPEED = 60
 REG_DESIREDSPEED = 61
 REG_FORWARD = 62
@@ -83,7 +84,13 @@ class PowerBoard(I2CWithCrc):
         return self.readReg(REG_HEADCALIBRATIONSTATE)
 
     def readHeadCalibrationSteps(self):
-        return (self.readReg(REG_HEADCALIBRATIONSTEPS_HI) << 8) + self.readReg(REG_HEADCALIBRATIONSTEPS_LO)        
+        return (self.readReg(REG_HEADCALIBRATIONSTEPS_HI) << 8) + self.readReg(REG_HEADCALIBRATIONSTEPS_LO)
+
+    def readHeadAutoRotate(self):
+        return self.readReg(REG_HEADAUTOROTATE)
+
+    def setHeadAutoRotate(self, v):
+        return self.writeReg(REG_HEADAUTOROTATE, v)
 
     # drive
 
@@ -128,7 +135,8 @@ class PowerBoard(I2CWithCrc):
         headFullSweepPosition = self.readHeadFullSweepSteps()
         headCenterPosition = self.readHeadCenterPosition()        
         headCali = self.readHeadCalibrationState()
-        headCaliSteps = self.readHeadCalibrationSteps()        
+        headCaliSteps = self.readHeadCalibrationSteps()
+        headAutoRotate = self.readHeadAutoRotate()
         desiredSpeed = self.readDesiredSpeed()
         speed = self.readSpeed()
         desiredForward = self.readDesiredForward()
@@ -137,7 +145,7 @@ class PowerBoard(I2CWithCrc):
         caliSteps = self.readCalibrationSteps()
         wheelEncoderCount = self.readWheelEncoderCount()
         print "dPos=%d, pos=%d, fPos=%d, cPos=%d, limits=%d, cali=%d, caliSteps=%d" % (desiredPosition, position, fullSweepPosition, centerPosition, lim, cali, caliSteps)
-        print "hdPos=%d, hpos=%d, hfPos=%d, hcPos=%d, hcali=%d, hcaliSteps=%d" % (headDesiredPosition, headPosition, headFullSweepPosition, headCenterPosition, headCali, headCaliSteps)
+        print "hdPos=%d, hpos=%d, hfPos=%d, hcPos=%d, hcali=%d, hcaliSteps=%d, autoRot=%d" % (headDesiredPosition, headPosition, headFullSweepPosition, headCenterPosition, headCali, headCaliSteps, headAutoRotate)
         print "dSpeed=%d, speed=%d, dForward=%d, forward=%d, wEncoder=%d" % (desiredSpeed, speed, desiredForward, forward, wheelEncoderCount)
         print ""
 

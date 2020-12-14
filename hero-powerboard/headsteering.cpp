@@ -125,8 +125,8 @@ bool HeadCalibrationComplete()
 
 void HeadSteerAbsolute(uint16_t newPosition)
 {
-    if (newPosition > HeadFullSweepSteps) {
-        newPosition = HeadFullSweepSteps;
+    if (newPosition >= HeadFullSweepSteps) {
+        newPosition = HeadFullSweepSteps-1;
     }
     HeadDesiredPosition = newPosition;
 }
@@ -138,26 +138,28 @@ void HeadSteerAbsoluteHi(uint8_t reg)
 
 void HeadSteerAbsoluteLo(uint8_t reg)
 {
-    HeadDesiredPosition = (HeadDesiredPositionHi<<8) | reg;
+    HeadSteerAbsolute((HeadDesiredPositionHi<<8) | reg);
 }
 
 // add something to a head position, wrapping as necessary
 uint16_t headPosAdd(int cur, int amount)
 {
-    cur += amount
+    cur += amount;
     if (cur<0) {
         cur = HeadFullSweepSteps-1;
     }
-    if (cur>=HeadFullSweepSteps) {
-        cur = 0
+    if (uint16_t(cur)>=HeadFullSweepSteps) {
+        cur = 0;
     }
 
-    return (uint16_t) cur
+    return (uint16_t) cur;
 }
 
 // return -1 if CCW gets us to the goal faster, or 1 if CW does
 int headShortestDirection(uint16_t cur, uint16_t goal)
 {
+    uint16_t deltaCW, deltaCCW;
+
     if (cur<goal) {
         deltaCW = goal-cur;
         deltaCCW = cur+HeadFullSweepSteps - goal;
@@ -171,9 +173,13 @@ int headShortestDirection(uint16_t cur, uint16_t goal)
     } else {
         return 1;
     }
+
+    return 0;
 }
 
 void HeadSteeringUpdate() {
+    int dir;
+
     if (!HeadCalibrationComplete()) {
         HeadCalibrationUpdate();
         return;
@@ -184,24 +190,24 @@ void HeadSteeringUpdate() {
     }
 
     if (HeadAutoRotate == AUTOROTATE_CW) {
-        HeadDesiredPosition = headPosAdd(HeadPosition, 1)
+        HeadDesiredPosition = headPosAdd(HeadPosition, 1);
     } else if (HeadAutoRotate == AUTOROTATE_CCW) {
-        HeadDesiredPosition = headPosAdd(HeadPosition, -1)
+        HeadDesiredPosition = headPosAdd(HeadPosition, -1);
     }
 
     if (HeadPosition == HeadDesiredPosition) {
         return;
     }
 
-    dir = headShortestDirection(HeadPosition, HeadDesiredPosition)
+    dir = headShortestDirection(HeadPosition, HeadDesiredPosition);
 
-    if (dir > 0) {
+    if (dir < 0) {
         HeadStep(false);
         HeadPosition = headPosAdd(HeadPosition, -1);
         tHeadSteeringUpdate = tLoopTop;
     }
 
-    if (dir < 0) {
+    if (dir > 0) {
         HeadStep(true);
         HeadPosition = headPosAdd(HeadPosition, 1);
         tHeadSteeringUpdate = tLoopTop;

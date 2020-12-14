@@ -87,6 +87,16 @@ class RemoteReceiver(threading.Thread):
                 self.powerBoard.setDesiredSpeed(speed_to)
 
                 self.lastSpeedJoy = self.y2
+
+            if (self.buttons & BUT0)!=0:
+                self.powerBoard.setHeadAutoRotate(1)
+            elif (self.buttons & BUT1)!=0:
+                self.powerBoard.setHeadAutoRotate(2)
+            else:
+                self.powerBoard.setHeadAutoRotate(0)
+
+            if (self.keypad & KEY_S)!=0:
+                self.powerBoard.setHeadDesiredPosition(self.powerBoard.readHeadCenterPosition())
         else:
             print "update", self.x1, self.y1, self.x2, self.y2
 
