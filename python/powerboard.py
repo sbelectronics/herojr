@@ -150,12 +150,6 @@ class PowerBoard(I2CWithCrc):
         print ""
 
 
-def diags(pb):
-    while (True):
-        pb.dumpRegs()
-        time.sleep(1)
-
-
 def main():
     import smbus
     bus = smbus.SMBus(1)

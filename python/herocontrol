@@ -2,10 +2,15 @@
 
 import argparse
 import sys
+import time
 import traceback
 
-from powerboard import PowerBoard, diags
+from powerboard import PowerBoard
+from speechboard import SpeechBoard
 from remotereceiver import RemoteReceiver
+
+glo_bus = None
+glo_pi = None
 
 
 def parse_args():
@@ -73,33 +78,68 @@ def reliabilityTest(pb):
             traceback.print_exc()
             errs += 1
             print "Errors=%d, Total=%d" % (errs, tot)
-        
 
 
-def  execute(args):
-    pi = None
+def initPowerBoard():
+    if glo_pi:
+        pb = PowerBoard(pi=glo_pi)
+    else:
+        pb = PowerBoard(bus=glo_bus)
+
+    return pb
+
+
+def initSpeechBoard():
+    if glo_pi:
+        sb = SpeechBoard(pi=glo_pi)
+    else:
+        sb = SpeechBoard(bus=glo_bus)
+
+    return sb
+
+
+def initBus(args):
+    global glo_bus, glo_pi
+
     if args.pigpio:
         try:
             import pigpio
-            pi = pigpio.pi()
-            if pi.connected:
-                pb = PowerBoard(pi=pi)
-            else:
+            glo_pi = pigpio.pi()
+            if not glo_pi.connected:
                 print "Failed to connect to pigpio; defaulting to smbus"
-                pi = None
+                glo_pi = None
         except ImportError:
             print "Failed to import pigpio; defaulting to smbus"
-            pi = None
+            glo_pi = None
 
-    if not pi:
+    if not glo_pi:
         import smbus
-        bus = smbus.SMBus(1)
-        pb = PowerBoard(bus=bus)
+        if not glo_bus:
+            glo_bus = smbus.SMBus(1)
+
+
+def diags(pb, sb):
+    while True:
+        pb.dumpRegs()
+        sb.dumpRegs()
+        time.sleep(1)
+
+
+def execute(args):
+    initBus(args)
+
+    pb = initPowerBoard()
+    sb = initSpeechBoard()
+
+    # All board commands
 
     if args.cmd == "diags":
         args.diags = True
     elif args.cmd == "show":
         pb.dumpRegs()
+
+    # PowerBoard Commands
+
     elif args.cmd == "setpos":
         if len(args.args)!=1:
             raise Exception("Invalid number of arguments to setpos")
@@ -124,6 +164,14 @@ def  execute(args):
             pb.setDesiredSpeed(int(args.args[0]))
     elif args.cmd == "reliability-test":
         reliabilityTest(pb)
+
+    # SpeechBoard Commands
+
+    elif args.cmd == "say":
+        if len(args.args)!=1:
+            raise Exception("Invalid number of arguments to say")
+        sb.say(args.args[0])
+
     else:
         raise Exception("Unknown command %s" % args.cmd)
 
@@ -132,7 +180,7 @@ def  execute(args):
         remote.start()
 
     if args.diags:
-        diags(pb)
+        diags(pb, sb)
 
     if args.remote:
         while True:
