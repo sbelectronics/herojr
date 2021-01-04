@@ -1,11 +1,14 @@
 #!/usr/bin/python -u
 
 import argparse
+import os
 import sys
 import time
 import traceback
 
 from powerboard import PowerBoard
+from nullboard import NullBoard
+from proxypowerboard import ProxyPowerBoard
 from speechboard import SpeechBoard
 from remotereceiver import RemoteReceiver
 
@@ -81,19 +84,25 @@ def reliabilityTest(pb):
 
 
 def initPowerBoard():
-    if glo_pi:
-        pb = PowerBoard(pi=glo_pi)
+    if os.path.exists("/etc/hero/proxypowerboard"):
+        pb = ProxyPowerBoard()
     else:
-        pb = PowerBoard(bus=glo_bus)
+        if glo_pi:
+            pb = PowerBoard(pi=glo_pi)
+        else:
+            pb = PowerBoard(bus=glo_bus)
 
     return pb
 
 
 def initSpeechBoard():
-    if glo_pi:
-        sb = SpeechBoard(pi=glo_pi)
+    if os.path.exists("/etc/hero/nullspeechboard"):
+        sb = NullBoard()
     else:
-        sb = SpeechBoard(bus=glo_bus)
+        if glo_pi:
+            sb = SpeechBoard(pi=glo_pi)
+        else:
+            sb = SpeechBoard(bus=glo_bus)
 
     return sb
 
@@ -176,7 +185,7 @@ def execute(args):
         raise Exception("Unknown command %s" % args.cmd)
 
     if args.remote:
-        remote = RemoteReceiver(pb)
+        remote = RemoteReceiver(pb, sb)
         remote.start()
 
     if args.diags:

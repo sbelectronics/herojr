@@ -16,6 +16,7 @@ uint8_t RegPosition;
 uint8_t receive_error;
 uint8_t send_crc, next_crc;
 uint8_t EchoReg;
+bool LastSpeechInsertResult;
 
 void SlaveReceive(int howMany) {
     uint8_t buf[RX_BUFFER_SIZE];
@@ -58,7 +59,10 @@ void SlaveReceive(int howMany) {
         switch (RegPosition) {
             case REG_ECHO:
                 EchoReg = data;
-                break;          
+                break;
+        case REG_SPEECH_QUEUE_PHONEME:
+            LastSpeechInsertResult = SpeechBufInsert(data);
+            break;
         }
         RegPosition++;
     }
@@ -96,6 +100,9 @@ void SlaveRequest() {
             break;
         case REG_SPEECH_STATE:
             data = SpeechState;
+            break;
+        case REG_SPEECH_QUEUE_PHONEME:
+            data = LastSpeechInsertResult;
             break;            
     }
 

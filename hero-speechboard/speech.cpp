@@ -264,8 +264,12 @@ void SpeechTest()
 {
     uint16_t i;
 
-    for (i=0; i<255; i++) {
-        SpeechBufInsert(DAISY[i]);
+    for (i=0; i<18; i++) {
+        SpeechBufInsert(THIS_IS_A_TEST[i]);
     } 
+    
+    //for (i=0; i<255; i++) {
+    //    SpeechBufInsert(DAISY[i]);
+    //} 
 }
 

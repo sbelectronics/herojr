@@ -9,5 +9,6 @@ void SpeechUpdate();
 void SpeechInit();
 void SpeechAmpEnable(bool);
 void SpeechTest();
+bool SpeechBufInsert(uint8_t data);
 
 #endif

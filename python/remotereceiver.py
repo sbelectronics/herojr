@@ -31,13 +31,16 @@ KEY_R =    0x4000
 BUT0  =         1
 BUT1  =         2
 
+ALL_KEYS = [KEY_1 , KEY_2 , KEY_3 , KEY_4 , KEY_5 , KEY_6 , KEY_7 , KEY_8 , KEY_9 , KEY_0 , KEY_HASH , KEY_STAR, KEY_S, KEY_P, KEY_R ]
+
 
 class RemoteReceiver(threading.Thread):
-    def __init__(self, powerBoard=None):
+    def __init__(self, powerBoard=None, speechBoard=None):
         threading.Thread.__init__(self)
         self.daemon = True
 
         self.powerBoard = powerBoard
+        self.speechBoard = speechBoard
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("", 1234))
@@ -53,8 +56,27 @@ class RemoteReceiver(threading.Thread):
         self.buttons = 0
         self.keypad = 0
 
+        self.lastKeys = 0
+
         self.lastSteerJoy = 0
         self.lastSpeedJoy = 0
+
+    def keyUp(self, key):
+        if (key == KEY_1):
+            self.speechBoard.say("daisy")
+        elif (key == KEY_2):
+            self.speechBoard.say("america")
+        elif (key == KEY_3):
+            self.speechBoard.say("mary")
+        elif (key == KEY_4):
+            self.speechBoard.say("leia")
+        elif (key == KEY_5):
+            self.speechBoard.say("iamrobot")
+        elif (key == KEY_6):
+            self.speechBoard.say("brain")
+        
+    def keyDown(self, key):
+        pass
 
     def handleUpdate(self):
         if self.powerBoard:
@@ -94,6 +116,14 @@ class RemoteReceiver(threading.Thread):
                 self.powerBoard.setHeadAutoRotate(2)
             else:
                 self.powerBoard.setHeadAutoRotate(0)
+
+            if (self.lastKeys is not None):
+                for key in ALL_KEYS:
+                    if ((self.lastKeys & key)!=0) and ((self.keypad & key)==0):
+                        self.keyUp(key)
+                    if ((self.lastKeys & key)==0) and ((self.keypad & key)!=0):
+                        self.keyDown(key)                 
+            self.lastKeys = self.keypad
 
             if (self.keypad & KEY_S)!=0:
                 self.powerBoard.setHeadDesiredPosition(self.powerBoard.readHeadCenterPosition())

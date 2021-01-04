@@ -8,6 +8,20 @@ REG_SPEECH_BUF_COUNT = 11
 REG_SPEECH_STATE = 12
 REG_SPEECH_QUEUE_PHONEME = 13
 
+HELLO_LEIA = [0x1B, 0x02, 0x00, 0x18, 0x26,
+              0x3E,
+              0x18, 0x31, 0x20, 0x31,
+              0x3F]
+
+PHRASES =  {"daisy": spk1.SPK_DAISY_DAISY,
+            "america": spk1.SPK_AMERICA_THE_BEAUTIFUL,
+            "jack": spk1.SPK_JACK_BE_NIMBLE,
+            "mary": spk1.SPK_MARY_HAD_A_LITTLE_LAMB,
+            "muffet": spk1.SPK_LITTLE_MISS_MUFFET,
+            "leia": HELLO_LEIA,
+            "iamrobot": spk1.SPK_I_AM_YOUR_PERSONAL_ROBOT,
+            "brain": spk1.SPK_I_HAVE_A_BRAIN_JUST_LIKE_YOU_DO}
+
 
 class SpeechBoard(I2CWithCrc):
     def __init__(self, bus=None, addr=0x5, pi=None, sdaPin=2, sclPin=3):
@@ -32,10 +46,8 @@ class SpeechBoard(I2CWithCrc):
             self.addPhoneme(phoneme)
 
     def say(self, v):
-        if v == "daisy":
-            self.sayPhonemeList(spk1.SPK_DAISY_DAISY)
-        elif v == "america":
-            self.sayPhonemeList(spk1.SPK_AMERICA_THE_BEAUTIFUL)
+        if v in PHRASES:
+            self.sayPhonemeList(PHRASES[v])
 
     def echo(self, v):
         self.writeReg(REG_ECHO, v)

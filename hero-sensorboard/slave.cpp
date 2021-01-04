@@ -100,7 +100,7 @@ void SlaveInit() {
     receive_error = ERROR_UNINITIALIZED;
     RegPosition = 0;
     EchoReg = 0;
-    Wire.begin(4);
+    Wire.begin(6);
     Wire.onReceive(SlaveReceive);
     Wire.onRequest(SlaveRequest);
 }
