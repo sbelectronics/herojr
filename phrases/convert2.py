@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import sys
 
 def removeNull(line):
@@ -16,13 +18,16 @@ def getComment(line):
     if ("FCB") in line:
         return None
 
-    line = line.split("                ")[1]
+    if ("FOB") in line:
+        return None        
 
-    line = line.lstrip(" *.,'\"=")
+    line = line.split("                ",1)[1]
+
+    line = line.lstrip(" *.,'\"=-")
     if not line:
         return None
 
-    if line.startswith("A") or line.startswith("B"):
+    if line.startswith("A") or line.startswith("B") or line.startswith("8"):
         if len(line)==4:
             return "***JUNK"
 
@@ -32,7 +37,7 @@ def emitC(comment, vals):
     if not comment:
         return
 
-    name = "SPK_" + comment.replace(" ", "_").replace(",","_")
+    name = "SPK_" + comment.replace(" ", "_").replace(",","_").replace("(","_").replace(")","_")
     c = 1
     print "#define %s_LEN %d" % (name, len(vals))
     print "const uint8_t %s[%s_LEN] = {" % (name, name)
@@ -53,7 +58,7 @@ def emit(comment, vals):
     if not comment:
         return
 
-    name = "SPK_" + comment.replace(" ", "_").replace(",","_").replace(".","_")
+    name = "SPK_" + comment.replace(" ", "_").replace(",","_").replace(".","_").replace("(","_").replace(")","_")
     c = 1
     print "%s = [" % (name)
     print "       ",

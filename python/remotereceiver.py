@@ -74,6 +74,8 @@ class RemoteReceiver(threading.Thread):
             self.speechBoard.say("iamrobot")
         elif (key == KEY_6):
             self.speechBoard.say("brain")
+        elif (key == KEY_7):
+            self.speechBoard.say("intruder")
         
     def keyDown(self, key):
         pass

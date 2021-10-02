@@ -8,5 +8,7 @@ PHRASES =  {"daisy": SPK_DAISY_DAISY,
             "muffet": SPK_LITTLE_MISS_MUFFET,
             "iamrobot": SPK_I_AM_YOUR_PERSONAL_ROBOT,
             "brain": SPK_I_HAVE_A_BRAIN_JUST_LIKE_YOU_DO,
-            
-            "leia": HELLO_LEIA,}
+            "intruder": SPK_INTRUDER_ALERT__,
+
+            "leia": HELLO_LEIA,
+            "ready": READY}

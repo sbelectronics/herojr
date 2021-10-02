@@ -179,7 +179,8 @@ void OutputPhoneme(uint8_t phoneme)
 
 void OutputInflection(uint8_t inflection)
 {
-    inflection = inflection & 0x03;
+    // invert inflection due to transistor drivers
+    inflection = (~inflection) & 0x03;
     PORTB = (PORTB & ~INFLECTION_MASK) | inflection;
 }
 

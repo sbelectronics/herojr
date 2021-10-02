@@ -24,11 +24,16 @@ class SpeechBoard(I2CWithCrc):
     def addPhoneme(self, v):
         return self.writeReg(REG_SPEECH_QUEUE_PHONEME, v)
 
-    def sayPhonemeList(self, phonemes):
+    def sayPhonemeList(self, phonemes, stop=True):
+        lastPhoneme = 0x3F
         for phoneme in phonemes:
             if phoneme == 0xFF:
                 continue
             self.addPhoneme(phoneme)
+            lastPhoneme = phoneme
+        
+        if stop and (lastPhoneme not in [0x03, 0x3E, 0x3F]):
+            self.addPhoneme(0x3F)
 
     def say(self, v):
         if v in PHRASES:
